@@ -7,3 +7,6 @@ case class GraphDirected[A](nodes: List[A], edges: List[(Option[Int], (A , A))])
 
 end GraphDirected
 
+val test: Graph[Int] = GraphDirected[Int](List(1, 2, 3), List((Option(1), (1, 2)),(Option(10), (3, 2))))
+
+test.toString
