@@ -5,6 +5,8 @@
 hs_err_pid*
 /.idea/
 /LIB/target/
+/APP/target/
 /target/
 /.bsp/
-/project/target/
+/project/target/*
+
