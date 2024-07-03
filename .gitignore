@@ -10,3 +10,4 @@ hs_err_pid*
 /.bsp/
 /project/target/*
 
+LIB/src/src.iml
