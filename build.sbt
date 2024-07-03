@@ -3,10 +3,6 @@ ThisBuild / version          := "0.1.0-SNAPSHOT"
 ThisBuild / organization     := "com.example"
 ThisBuild / organizationName := "example"
 
-// Root project
-lazy val root = (project in file("."))
-  .aggregate(App, Lib)
-
 // App subproject
 lazy val App = (project in file("APP"))
   .settings(
@@ -16,7 +12,7 @@ lazy val App = (project in file("APP"))
       "dev.zio" %% "zio-test" % "2.1.5" % Test
     ),
     testFrameworks += new TestFramework("zio.test.sbt.ZTestFramework")
-  )
+  ).dependsOn(Lib)
 
 // Lib subproject
 lazy val Lib = (project in file("LIB"))
