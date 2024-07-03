@@ -17,9 +17,15 @@ case class GraphDirected[A](nodes: List[A], edges: List[(A , A)]) extends MyGrap
 
   def addNode(toAdd: A): GraphDirected[A] =
     GraphDirected(this.nodes.appended(toAdd), this.edges)
+
   def removeNode(toRemove: A): GraphDirected[A] =
-    // remove all edges with said node
-    GraphDirected(this.nodes.filterNot(node => node == toRemove), this.edges)
+    val updatedEdges:List[(A, A)] = for {
+    edge <- edges
+    (from, to) = edge
+    if !(from == toRemove || to == toRemove)
+  } yield edge
+
+    GraphDirected(this.nodes.filterNot(node => node == toRemove), updatedEdges)
 
   def addEdge(from: A, to: A):GraphDirected[A] =
     val updatedNode: List[A] = nodes ++ (if !this.nodes.contains(from) then List(from) else Nil) ++ (if !this.nodes.contains(to) then List(to) else Nil)
