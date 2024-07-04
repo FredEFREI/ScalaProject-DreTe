@@ -39,6 +39,13 @@ object Main extends ZIOAppDefault:
 
     } yield result
 
+  private def saveFile: IO[IOException, String] =
+    for {
+      fileName: String <- Console.readLine("Enter the path to the graph file:")
+
+    //TODO Implement file saving
+
+    } yield fileName
 
   private def addDirectedEdge: IO[IOException, String] =
     for {
@@ -59,6 +66,7 @@ object Main extends ZIOAppDefault:
       graph = newGraph
       s"Edge from $Source to $Destination removed successfully"
     }
+
   private def addDirectedNode: IO[IOException, String] =
     for {
       Node <- getUserInput("----------------------------------------------------\nEnter a node name\n")
@@ -77,11 +85,12 @@ object Main extends ZIOAppDefault:
     }
   private def mainMenu: IO[IOException, String] =
     for {
-      Option <- getUserInput("----------------------------------------------------\nChoose an option:\n1: Create/Load a graph\n2: Graphs\n3: Exit\n")
+      Option <- getUserInput("----------------------------------------------------\nChoose an option:\n1: Create/Load a graph\n2: Save graph\n3: Modify/Display graph\n4: Exit\n")
       res <- Option match
-        case "1" => loadFile <*> mainMenu //TODO
+        case "1" => loadFile <*> mainMenu
         case "2" => graphMenu <*> mainMenu
-        case "3" => Console.printLine("Exiting...")
+        case "3" => graphMenu <*> mainMenu
+        case "4" => Console.printLine("Exiting...")
         case _ => Console.printLine("Invalid option. Please try again.") <*> mainMenu
     } yield Option
 
