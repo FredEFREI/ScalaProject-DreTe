@@ -2,8 +2,8 @@ import lib.GraphDirected
 import zio.*
 
 import java.io.IOException
-import scala.io.Source.*
-import scala.util.{Try, Using}
+import scala.io.Source
+import scala.util.{Failure, Success, Try, Using}
 
 
 
@@ -12,25 +12,33 @@ object Main extends ZIOAppDefault:
   private def loadFile: IO[IOException, String] =
     import zio.json._
     implicit val decoder: JsonDecoder[GraphDirected[Int]] = DeriveJsonDecoder.gen[GraphDirected[Int]]
-    for
-      fileName <- Console.readLine("Enter the path to the graph file:")
-      _ <- Console.printLine("Loading graph from file...")
+    for {
 
-      lines <- {
-        val source = fromFile(fileName)
-        val content = source.mkString
-        source.close()
-        ZIO.succeed(content)
-      }
+      fileName: String <- Console.readLine("Enter the path to the graph file:")
 
-      newGraph <- ZIO.succeed(lines.fromJson[GraphDirected[Int]])
+      fileContent <- ZIO.fromEither(Using(Source.fromFile(name = fileName)) { s => s.getLines().mkString } match
+        case Success(value) =>
+          Right(value)
+        case Failure(exception) =>
+          Left(new IOException(exception))).fold(
+        _ => "File load unsucessfull",
+        content => content
+      )
 
-      res  = newGraph match
-        case Left(errorMessages) => errorMessages
-        case Right(newGraph) =>
+
+
+      result <- ZIO.fromEither(fileContent.fromJson[GraphDirected[Int]].left.map((e: String) => new IOException(e))).fold(
+        _ => "File load unsucessfull",
+        newGraph =>
           graph = newGraph
-          "Graph updated successfully"
-    yield res
+          "Graph loaded successfully"
+      )
+      _ <- Console.printLine(graph.toString)
+      _ <- Console.printLine(result)
+
+
+    } yield result
+
 
   private def addDirectedEdge: IO[IOException, String] =
     for {
