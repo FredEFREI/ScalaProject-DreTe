@@ -5,9 +5,17 @@ trait MyGraph[A]:
   def nodes: List[A]
   def edges: List[(A, A)]
 
+  def getNodes: List[A] = nodes
+  def getEdges: List[(A, A)] = edges
+
+  def getNeighbours(node: A): List[A]
+  def addNode(toAdd: A): MyGraph[A]
+  def removeNode(toRemove: A): MyGraph[A]
+  def addEdge(from: A, to: A): MyGraph[A]
+  def removeEdge(from: A, to: A): MyGraph[A]
+
 case class GraphDirected[A](nodes: List[A], edges: List[(A , A)]) extends MyGraph[A]:
-  def getNodes:List[A] = nodes
-  def getEdges:List[(A, A)] = edges
+
   def getNeighbours(node: A):List[A] =
     for {
         edge <- edges
@@ -16,7 +24,7 @@ case class GraphDirected[A](nodes: List[A], edges: List[(A , A)]) extends MyGrap
       } yield to
 
   def addNode(toAdd: A): GraphDirected[A] =
-    GraphDirected(this.nodes.appended(toAdd), this.edges)
+    if nodes.contains(toAdd) then this else GraphDirected(this.nodes.appended(toAdd), this.edges)
 
   def removeNode(toRemove: A): GraphDirected[A] =
     val updatedEdges:List[(A, A)] = for {

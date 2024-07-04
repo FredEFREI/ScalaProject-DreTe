@@ -9,7 +9,8 @@ lazy val App = (project in file("APP"))
     name := "App",
     libraryDependencies ++= Seq(
       "dev.zio" %% "zio" % "2.1.5",
-      "dev.zio" %% "zio-test" % "2.1.5" % Test
+      "dev.zio" %% "zio-test" % "2.1.5" % Test,
+      "dev.zio" %% "zio-json" % "0.7.1"
     ),
     testFrameworks += new TestFramework("zio.test.sbt.ZTestFramework")
   ).dependsOn(Lib)
@@ -20,7 +21,8 @@ lazy val Lib = (project in file("LIB"))
     name := "Lib",
     libraryDependencies ++= Seq(
       "dev.zio" %% "zio" % "2.1.5",
-      "dev.zio" %% "zio-test" % "2.1.5" % Test
+      "dev.zio" %% "zio-test" % "2.1.5" % Test,
+      "dev.zio" %% "zio-json" % "0.7.1"
     ),
     testFrameworks += new TestFramework("zio.test.sbt.ZTestFramework")
   )

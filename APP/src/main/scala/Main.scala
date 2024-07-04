@@ -1,21 +1,36 @@
 import lib.GraphDirected
 import zio.*
+
 import java.io.IOException
+import scala.io.Source.*
+import scala.util.{Try, Using}
+
 
 
 object Main extends ZIOAppDefault:
   var graph: GraphDirected[Int] = GraphDirected[Int](List(1, 2, 3), List((1, 2),(3, 2)))
-  //val graphNotDirected: GraphDirected[Int] = GraphDirected[Int](List(1, 2, 3), List((1, 2),(3, 2))) //TODO ajouter quand le graphe non orienté fonctionnera
   private def loadFile: IO[IOException, String] =
+    import zio.json._
+    implicit val decoder: JsonDecoder[GraphDirected[Int]] = DeriveJsonDecoder.gen[GraphDirected[Int]]
     for
       fileName <- Console.readLine("Enter the path to the graph file:")
       _ <- Console.printLine("Loading graph from file...")
 
-      // TODO Here you would add your logic to actually load the graph
+      lines <- {
+        val source = fromFile(fileName)
+        val content = source.mkString
+        source.close()
+        ZIO.succeed(content)
+      }
 
-      _ <- Console.printLine("Graph loaded successfully!")
-    yield fileName
+      newGraph <- ZIO.succeed(lines.fromJson[GraphDirected[Int]])
 
+      res  = newGraph match
+        case Left(errorMessages) => errorMessages
+        case Right(newGraph) =>
+          graph = newGraph
+          "Graph updated successfully"
+    yield res
 
   private def addDirectedEdge: IO[IOException, String] =
     for {
