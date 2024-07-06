@@ -24,3 +24,11 @@ implicit val encoder: JsonEncoder[GraphDirected[Int]] = DeriveJsonEncoder.gen[Gr
 
 
 test6.toJson
+
+test6.dfs(1)
+
+test6.bfs(1)
+
+test6.toDot
+
+test6.topologicalSort()

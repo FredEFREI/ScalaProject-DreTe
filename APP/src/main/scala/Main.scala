@@ -2,6 +2,9 @@ import lib.GraphDirected
 import zio.*
 
 import java.io.IOException
+import java.nio.file.{Paths, Files}
+import java.nio.charset.StandardCharsets
+
 import scala.io.Source
 import scala.util.{Failure, Success, Try, Using}
 
@@ -40,11 +43,13 @@ object Main extends ZIOAppDefault:
     } yield result
 
   private def saveFile: IO[IOException, String] =
+    import zio.json._
+    implicit val encoder: JsonEncoder[GraphDirected[Int]] = DeriveJsonEncoder.gen[GraphDirected[Int]]
     for {
       fileName: String <- Console.readLine("Enter the path to the graph file:")
+      _ <- ZIO.succeed(Files.write(Paths.get(fileName), graph.toJson.getBytes(StandardCharsets.UTF_8)))
 
-    //TODO Implement file saving
-
+      _ <- Console.printLine("Graph saved successfully")
     } yield fileName
 
   private def addDirectedEdge: IO[IOException, String] =
@@ -88,7 +93,7 @@ object Main extends ZIOAppDefault:
       Option <- getUserInput("----------------------------------------------------\nChoose an option:\n1: Create/Load a graph\n2: Save graph\n3: Modify/Display graph\n4: Exit\n")
       res <- Option match
         case "1" => loadFile <*> mainMenu
-        case "2" => graphMenu <*> mainMenu
+        case "2" => saveFile <*> mainMenu
         case "3" => graphMenu <*> mainMenu
         case "4" => Console.printLine("Exiting...")
         case _ => Console.printLine("Invalid option. Please try again.") <*> mainMenu
@@ -96,9 +101,9 @@ object Main extends ZIOAppDefault:
 
   private def graphMenu: IO[IOException, String] =
     for {
-      graphOption <- getUserInput("----------------------------------------------------\nChoose an option:\n1: Diplay\n2: Create\n3: New node\n4: New edge\n5: Remove node\n6: Remove edge\n7: Back\n")
+      graphOption <- getUserInput("----------------------------------------------------\nChoose an option:\n1: Display\n2: Clear\n3: New node\n4: New edge\n5: Remove node\n6: Remove edge\n7: Back\n")
       res <- graphOption match
-        case "1" => Console.printLine(this.graph.toString) <*> graphMenu //TODO
+        case "1" => Console.printLine("Copy the following line and input it in a Graphviz viewer of your choice\n" ++ this.graph.toDot) <*> graphMenu //TODO
         case "2" => Console.printLine("Clear graph") <*> graphMenu //TODO
         case "3" => addDirectedNode <*> graphMenu
         case "4" => addDirectedEdge <*> graphMenu
