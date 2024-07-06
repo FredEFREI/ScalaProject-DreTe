@@ -115,7 +115,69 @@ case class GraphDirected[A](nodes: List[A], edges: List[(A , A)]) extends MyGrap
     hasBidirectionalEdge || firstNodes.exists(node => dfsCycleHelper(node, Set(), Set()))
   }
 
-  def floydPath(): List[A] = ???
+  def floyd(): (Map[(A, A), Int], Map[(A, A), Option[A]])= {
+
+    def updateDistPred(dist: Map[(A, A), Int], pred: Map[(A, A), Option[A]], nodeK: A, nodeI: A, nodeJ: A): (Map[(A, A), Int], Map[(A, A), Option[A]]) = {
+      val currentDist = dist((nodeI, nodeK)) + dist((nodeK, nodeJ))
+      if (dist((nodeI, nodeJ)) > currentDist) {
+        val updatedDist = dist.updated((nodeI, nodeJ), currentDist)
+        val updatedPred = pred.updated((nodeI, nodeJ), Some(nodeK))
+        (updatedDist, updatedPred)
+      } else {
+        (dist, pred)
+      }
+    }
+
+    @tailrec
+    def floydHelper(dist: Map[(A, A), Int], pred: Map[(A, A), Option[A]], nodes: List[A]): (Map[(A, A), Int], Map[(A, A), Option[A]]) = nodes match {
+      case nodeK :: restNodes =>
+        val (updatedDist, updatedPred) = (for {
+          nodeI <- nodes
+          nodeJ <- nodes
+        } yield (nodeI, nodeJ)).foldLeft((dist, pred)) {
+          case ((currentDist, currentPred), (nodeI, nodeJ)) =>
+            updateDistPred(currentDist, currentPred, nodeK, nodeI, nodeJ)
+        }
+        floydHelper(updatedDist, updatedPred, restNodes)
+      case Nil => (dist, pred)
+    }
+
+    val initialDist: Map[(A, A), Int] = (for {
+      edge <- edges
+      (a, b) = edge
+    } yield (edge, if (a == b) 0 else 1)).toMap.withDefaultValue(999)
+
+
+    val initialPred: Map[(A, A), Option[A]] = (for {
+      a <- nodes
+      b <- nodes
+    } yield ((a, b), if (a == b || edges.contains((a, b))) Some(a) else None)).toMap
+
+    floydHelper(initialDist, initialPred, nodes)
+
+  }
+
+  def floydPath(from: A, to: A): (List[A], Int) = {
+    def getPath(pred: Map[(A, A), Option[A]], from: A, to: A): List[A] = {
+      @tailrec
+      def getPathHelper(path: List[A], current: A): List[A] = pred((from, current)) match {
+        case Some(prev) if prev != from => getPathHelper(prev :: path, prev)
+        case Some(prev) => from :: prev :: path
+        case None => path
+      }
+
+      if (pred((from, to)).isEmpty)
+        List.empty
+      else
+        getPathHelper(List(to), to)
+    }
+
+    val (dist, pred) = floyd()
+
+    (getPath(pred, from, to), dist((from, to)))
+
+
+  }
 
   def dijkstraPath(): List[A] = ???
 

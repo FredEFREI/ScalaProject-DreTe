@@ -23,7 +23,7 @@ trait MyGraph[A]:
   def topologicalSort(): List[A]
   def cycleDetection(): Boolean
   
-  def floydPath(): List[A]
+  def floydPath(from: A, to: A): (List[A], Int)
   def dijkstraPath(): List[A]
 
   def toDot: String

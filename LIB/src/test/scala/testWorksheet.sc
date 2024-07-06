@@ -34,3 +34,5 @@ test6.toDot
 test6.topologicalSort()
 
 test6.addEdge(6, 1).cycleDetection()
+
+test6.floydPath(1, 2)
