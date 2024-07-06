@@ -17,9 +17,14 @@ trait MyGraph[A]:
   def removeNode(toRemove: A): MyGraph[A]
   def addEdge(from: A, to: A): MyGraph[A]
   def removeEdge(from: A, to: A): MyGraph[A]
+
   def dfs(node: A): List[A]
   def bfs(node: A): List[List[A]]
   def topologicalSort(): List[A]
+  def cycleDetection(): Boolean
+  
+  def floydPath(): List[A]
+  def dijkstraPath(): List[A]
 
   def toDot: String
 

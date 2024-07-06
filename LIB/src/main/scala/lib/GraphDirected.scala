@@ -9,14 +9,14 @@ case class GraphDirected[A](nodes: List[A], edges: List[(A , A)]) extends MyGrap
     for {
       edge <- edges
       (from, to) = edge
-      if to == node && from != node
+      if to == node
     } yield from
 
   def getNeighbours(node: A):List[A] =
     for {
       edge <- edges
       (from , to) = edge
-      if from == node && to != node
+      if from == node
     } yield to
 
   def addNode(toAdd: A): GraphDirected[A] =
@@ -88,6 +88,35 @@ case class GraphDirected[A](nodes: List[A], edges: List[(A , A)]) extends MyGrap
     isolated ++ topologicalSortHelper(froms, List[A]())
   }
 
+  def cycleDetection(): Boolean = {
 
+    def dfsCycleHelper(node: A, visited: Set[A], recursiveStack: Set[A]): Boolean =
+      val updatedVisited = visited + node
+      val updatedStack = recursiveStack + node
+
+      this.getNeighbours(node).exists { neighbour =>
+        (!updatedVisited.contains(neighbour) && dfsCycleHelper(neighbour, updatedVisited, updatedStack)) ||
+          updatedStack.contains(neighbour) ||
+          neighbour == node
+      }
+
+    def hasBidirectionalEdge: Boolean =
+      nodes.exists { node =>
+        this.getNeighbours(node).exists { neighbour =>
+          this.getNeighbours(neighbour).contains(node)
+        }
+      }
+
+    val firstNodes = for {
+      node <- nodes
+      if this.getPrevious(node).isEmpty
+    } yield node
+
+    hasBidirectionalEdge || firstNodes.exists(node => dfsCycleHelper(node, Set(), Set()))
+  }
+
+  def floydPath(): List[A] = ???
+
+  def dijkstraPath(): List[A] = ???
 
 end GraphDirected

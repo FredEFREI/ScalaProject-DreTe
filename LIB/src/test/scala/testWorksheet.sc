@@ -32,3 +32,5 @@ test6.bfs(1)
 test6.toDot
 
 test6.topologicalSort()
+
+test6.addEdge(6, 1).cycleDetection()
