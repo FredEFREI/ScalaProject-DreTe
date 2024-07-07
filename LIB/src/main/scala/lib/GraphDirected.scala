@@ -129,7 +129,8 @@ case class GraphDirected[A](nodes: List[A], edges: List[(A , A)]) extends MyGrap
     }
 
     @tailrec
-    def floydHelper(dist: Map[(A, A), Int], pred: Map[(A, A), Option[A]], nodes: List[A]): (Map[(A, A), Int], Map[(A, A), Option[A]]) = nodes match {
+    def floydHelper(dist: Map[(A, A), Int], pred: Map[(A, A), Option[A]], nodesCurrent: List[A]): (Map[(A, A), Int], Map[(A, A), Option[A]]) =
+      nodesCurrent match {
       case nodeK :: restNodes =>
         val (updatedDist, updatedPred) = (for {
           nodeI <- nodes
@@ -146,7 +147,7 @@ case class GraphDirected[A](nodes: List[A], edges: List[(A , A)]) extends MyGrap
       edge <- edges
       (a, b) = edge
     } yield (edge, if (a == b) 0 else 1)).toMap.withDefaultValue(999)
-
+    
 
     val initialPred: Map[(A, A), Option[A]] = (for {
       a <- nodes
@@ -162,7 +163,7 @@ case class GraphDirected[A](nodes: List[A], edges: List[(A , A)]) extends MyGrap
       @tailrec
       def getPathHelper(path: List[A], current: A): List[A] = pred((from, current)) match {
         case Some(prev) if prev != from => getPathHelper(prev :: path, prev)
-        case Some(prev) => from :: prev :: path
+        case Some(prev) =>  prev :: path
         case None => path
       }
 
