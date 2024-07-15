@@ -102,8 +102,50 @@ case class GraphNonDirected[A](nodes: List[A], edges: List[(A , A)]) extends MyG
     nodes.exists(node => dfsCycleHelper(node, None, Set()))
   }
 
-  def dijkstra():List[A] = ???
+  def dijkstra(from: A, to: A): Option[(List[A], Int)] = {
+    val initialDistances = nodes.map(node => node -> Int.MaxValue).toMap + (from -> 0)
+    val initialPredecessors = nodes.map(node => node -> None).toMap
 
-  override def getShortestPath(from: A, to: A): (List[A], Int) = ???
+    @tailrec
+    def dijkstraHelper(unvisited: Set[A], distances: Map[A, Int], pred: Map[A, Option[A]]): (Map[A, Int], Map[A, Option[A]]) = {
+      if (unvisited.isEmpty || !unvisited.contains(to))
+        (distances, pred)
+      else
+        val (currentNode, currentDistance) = unvisited.map(node => node -> distances(node)).minBy(_._2)
+        if (currentNode == to)
+          (distances, pred)
+        else
+          val neighbors = this.getPrevNeigh(currentNode)
+          val (newDistances, newPredecessors) = neighbors.foldLeft((distances, pred)) { case ((distancesAcc, predecessorsAcc), neighbor) =>
+            val alternativePathDistance = currentDistance + 1
+            if (alternativePathDistance < distancesAcc(neighbor))
+              (distancesAcc + (neighbor -> alternativePathDistance), predecessorsAcc + (neighbor -> Some(currentNode)))
+            else
+              (distancesAcc, predecessorsAcc)
+          }
+          dijkstraHelper(unvisited - currentNode, newDistances, newPredecessors)
+    }
+
+    val (finalDistances, finalPredecessors) = dijkstraHelper(nodes.toSet, initialDistances, initialPredecessors)
+    finalDistances.get(to).filter(_ < Int.MaxValue).map { distance =>
+      @tailrec
+      def reconstructPath(node: A, path: List[A] = List.empty): List[A] = {
+        finalPredecessors(node) match {
+          case Some(predecessor) => reconstructPath(predecessor, node :: path)
+          case None => from :: path
+        }
+      }
+      val path = reconstructPath(to)
+      (path, distance)
+    }
+  }
+
+
+  override def getShortestPath(from: A, to: A): (List[A], Int) =
+    dijkstra(from, to) match
+      case Some((path, distance)) => (path, distance)
+      case None =>
+        print(s"There is no path from $from to $to")
+        (List(), 0)
 
 end GraphNonDirected

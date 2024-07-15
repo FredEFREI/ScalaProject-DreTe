@@ -27,7 +27,7 @@ test6.topologicalSort()
 test6.removeEdge(5, 2).cycleDetection()
 test6.addEdge(3, 6).cycleDetection()
 
-test6.getShortestPath(1, 2)
+test6.getShortestPath(6, 5)
 
 test6.getNeighbours(3)
 test6.getPrevious(3)
