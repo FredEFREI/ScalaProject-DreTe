@@ -1,28 +1,30 @@
 package lib
 
-import lib.*
 import scala.annotation.tailrec
 
 case class GraphDirected[A](nodes: List[A], edges: List[(A , A)]) extends MyGraph[A]:
 
-  def getPrevious(node: A):List[A] =
+  override def getPrevious(node: A):List[A] =
     for {
       edge <- edges
       (from, to) = edge
       if to == node
     } yield from
 
-  def getNeighbours(node: A):List[A] =
+  override def getNeighbours(node: A):List[A] =
     for {
       edge <- edges
       (from , to) = edge
       if from == node
     } yield to
 
-  def addNode(toAdd: A): GraphDirected[A] =
+  override def getPrevNeigh(node: A): List[A] =
+    getPrevious(node) ++ getNeighbours(node)
+
+  override def addNode(toAdd: A): GraphDirected[A] =
     if nodes.contains(toAdd) then this else GraphDirected(this.nodes.appended(toAdd), this.edges)
 
-  def removeNode(toRemove: A): GraphDirected[A] =
+  override def removeNode(toRemove: A): GraphDirected[A] =
     val updatedEdges:List[(A, A)] = for {
       edge <- edges
       (from, to) = edge
@@ -31,18 +33,18 @@ case class GraphDirected[A](nodes: List[A], edges: List[(A , A)]) extends MyGrap
 
     GraphDirected(this.nodes.filterNot(node => node == toRemove), updatedEdges)
 
-  def addEdge(from: A, to: A):GraphDirected[A] =
+  override def addEdge(from: A, to: A):GraphDirected[A] =
     val updatedNode: List[A] = nodes ++ (if !this.nodes.contains(from) then List(from) else Nil) ++ (if !this.nodes.contains(to) then List(to) else Nil)
     GraphDirected(updatedNode, this.edges ++ List(from -> to))
 
-  def removeEdge(from: A, to: A): GraphDirected[A] =
+  override def removeEdge(from: A, to: A): GraphDirected[A] =
     GraphDirected(this.nodes, this.edges.filterNot(edge => edge == (from -> to)))
 
-  implicit def toDot: String =
+  override implicit def toDot: String =
     "digraph { " ++ nodes.map{a => s"$a "}.mkString ++ edges.map{case(a, b) => s"$a -> $b "}.mkString ++ "}"
 
 
-  def dfs(node: A): List[A] = {
+  override def dfs(node: A): List[A] = {
     def dfsHelper(current: A, visited: List[A]):List[A] =
       if (visited.contains(current)) visited
       else
@@ -52,7 +54,7 @@ case class GraphDirected[A](nodes: List[A], edges: List[(A , A)]) extends MyGrap
     dfsHelper(node, List()).reverse
   }
 
-  def bfs(node: A): List[List[A]] = {
+  override def bfs(node: A): List[List[A]] = {
     @tailrec
     def bfsHelper(element: List[A], visited: List[List[A]]): List[List[A]] = {
       val adjacencyList = element.flatMap(node => this.getNeighbours(node)).filterNot(visited.flatten.contains).distinct
@@ -65,7 +67,7 @@ case class GraphDirected[A](nodes: List[A], edges: List[(A , A)]) extends MyGrap
     bfsHelper(List(node), List(List(node))).reverse
   }
 
-  def topologicalSort(): List[A] ={
+  override def topologicalSort(): List[A] ={
     @tailrec
     def topologicalSortHelper(froms: Map[A, Set[A]], done:List[A]): List[A] = {
       val (noFroms, hasFroms) = froms.partition( _._2.isEmpty)
@@ -83,12 +85,12 @@ case class GraphDirected[A](nodes: List[A], edges: List[(A , A)]) extends MyGrap
     }
     val isolated = for {
       node <- nodes
-      if this.getNeighbours(node).isEmpty && this.getPrevious(node).isEmpty
+      if this.getPrevNeigh(node).isEmpty
     } yield node
     isolated ++ topologicalSortHelper(froms, List[A]())
   }
 
-  def cycleDetection(): Boolean = {
+  override def cycleDetection(): Boolean = {
 
     def dfsCycleHelper(node: A, visited: Set[A], recursiveStack: Set[A]): Boolean =
       val updatedVisited = visited + node
@@ -157,7 +159,7 @@ case class GraphDirected[A](nodes: List[A], edges: List[(A , A)]) extends MyGrap
     floydHelper(initialDist, initialPred, nodes)
 
   }
-  def getShortestPath(from: A, to: A): (List[A], Int) = {
+  override def getShortestPath(from: A, to: A): (List[A], Int) = {
     def getPath(pred: Map[(A, A), Option[A]], from: A, to: A): List[A] = {
       @tailrec
       def getPathHelper(path: List[A], current: A): List[A] = pred((from, current)) match {
@@ -175,8 +177,5 @@ case class GraphDirected[A](nodes: List[A], edges: List[(A , A)]) extends MyGrap
     val (dist, pred) = floyd()
 
     (getPath(pred, from, to), dist((from, to)))
-  
-
-
   }
 end GraphDirected

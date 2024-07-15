@@ -12,6 +12,7 @@ trait MyGraph[A]:
 
   def getNeighbours(node: A): List[A]
   def getPrevious(node: A): List[A]
+  def getPrevNeigh(node: A): List[A]
 
   def addNode(toAdd: A): MyGraph[A]
   def removeNode(toRemove: A): MyGraph[A]
