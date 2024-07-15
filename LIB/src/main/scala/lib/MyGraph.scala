@@ -23,9 +23,8 @@ trait MyGraph[A]:
   def topologicalSort(): List[A]
   def cycleDetection(): Boolean
   
-  def floydPath(from: A, to: A): (List[A], Int)
-  def dijkstraPath(): List[A]
-
+  def getShortestPath(from: A, to: A): (List[A], Int)
+  
   def toDot: String
 
 

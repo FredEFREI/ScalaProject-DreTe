@@ -35,4 +35,4 @@ test6.topologicalSort()
 
 test6.addEdge(6, 1).cycleDetection()
 
-test6.floydPath(1, 6)
+test6.getShortestPath(1, 2)

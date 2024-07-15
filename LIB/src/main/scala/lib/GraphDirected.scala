@@ -157,8 +157,7 @@ case class GraphDirected[A](nodes: List[A], edges: List[(A , A)]) extends MyGrap
     floydHelper(initialDist, initialPred, nodes)
 
   }
-
-  def floydPath(from: A, to: A): (List[A], Int) = {
+  def getShortestPath(from: A, to: A): (List[A], Int) = {
     def getPath(pred: Map[(A, A), Option[A]], from: A, to: A): List[A] = {
       @tailrec
       def getPathHelper(path: List[A], current: A): List[A] = pred((from, current)) match {
@@ -176,10 +175,8 @@ case class GraphDirected[A](nodes: List[A], edges: List[(A , A)]) extends MyGrap
     val (dist, pred) = floyd()
 
     (getPath(pred, from, to), dist((from, to)))
+  
 
 
   }
-
-  def dijkstraPath(): List[A] = ???
-
 end GraphDirected
