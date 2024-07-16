@@ -41,7 +41,7 @@ case class GraphNonDirectedWeighted[A](nodes: List[A], edges: List[((A , A), Int
     GraphNonDirectedWeighted(this.nodes, this.edges.filterNot(edge => edge == (from -> to)))
 
   override implicit def toDot: String =
-    "graph { " ++ nodes.map { a => s"$a " }.mkString ++ edges.map { case (a, b) => s"$a -- $b " }.mkString ++ "}"
+    "graph { " ++ nodes.map { a => s"$a " }.mkString ++ edges.map { edge => s"${edge._1._1} -- ${edge._1._2} [label=${edge._2}] " }.mkString ++ "}"
 
   override def dfs(node: A): List[A] = {
     def dfsHelper(current: A, visited: List[A]):List[A] =
