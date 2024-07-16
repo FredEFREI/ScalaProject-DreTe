@@ -22,7 +22,8 @@ lazy val Lib = (project in file("LIB"))
     libraryDependencies ++= Seq(
       "dev.zio" %% "zio" % "2.1.5",
       "dev.zio" %% "zio-test" % "2.1.5" % Test,
-      "dev.zio" %% "zio-json" % "0.7.1"
+      "dev.zio" %% "zio-json" % "0.7.1",
+      "org.scalatest" %% "scalatest" % "3.2.18" %Test
     ),
     testFrameworks += new TestFramework("zio.test.sbt.ZTestFramework")
-  )
+)
