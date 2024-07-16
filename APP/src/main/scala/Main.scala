@@ -1,4 +1,4 @@
-import lib.GraphDirected
+import lib.*
 import zio.*
 
 import java.io.IOException
@@ -11,10 +11,10 @@ import scala.util.{Failure, Success, Try, Using}
 
 
 object Main extends ZIOAppDefault:
-  var graph: GraphDirected[Int] = GraphDirected[Int](List(1, 2, 3), List((1, 2),(3, 2)))
+  private var graph: GraphDirectedWeighted[Int] = GraphDirectedWeighted[Int](List(1, 2, 3), List(((1, 2), 1),((3, 2), 3)))
   private def loadFile: IO[IOException, String] =
     import zio.json._
-    implicit val decoder: JsonDecoder[GraphDirected[Int]] = DeriveJsonDecoder.gen[GraphDirected[Int]]
+    implicit val decoder: JsonDecoder[GraphDirectedWeighted[Int]] = DeriveJsonDecoder.gen[GraphDirectedWeighted[Int]]
     for {
 
       fileName: String <- Console.readLine("Enter the path to the graph file:")
@@ -24,14 +24,14 @@ object Main extends ZIOAppDefault:
           Right(value)
         case Failure(exception) =>
           Left(new IOException(exception))).fold(
-        _ => "File load unsucessfull",
+        _ => "File load unsuccessful",
         content => content
       )
 
 
 
-      result <- ZIO.fromEither(fileContent.fromJson[GraphDirected[Int]].left.map((e: String) => new IOException(e))).fold(
-        _ => "File load unsucessfull",
+      result <- ZIO.fromEither(fileContent.fromJson[GraphDirectedWeighted[Int]].left.map((e: String) => new IOException(e))).fold(
+        _ => "File load unsuccessful",
         newGraph =>
           graph = newGraph
           "Graph loaded successfully"
@@ -44,7 +44,7 @@ object Main extends ZIOAppDefault:
 
   private def saveFile: IO[IOException, String] =
     import zio.json._
-    implicit val encoder: JsonEncoder[GraphDirected[Int]] = DeriveJsonEncoder.gen[GraphDirected[Int]]
+    implicit val encoder: JsonEncoder[GraphDirectedWeighted[Int]] = DeriveJsonEncoder.gen[GraphDirectedWeighted[Int]]
     for {
       fileName: String <- Console.readLine("Enter the path to the graph file:")
       _ <- ZIO.succeed(Files.write(Paths.get(fileName), graph.toJson.getBytes(StandardCharsets.UTF_8)))
@@ -56,7 +56,8 @@ object Main extends ZIOAppDefault:
     for {
       Source <- getUserInput("----------------------------------------------------\nEnter a source node name\n")
       Destination <- getUserInput("----------------------------------------------------\nEnter a destination node name\n")
-      newGraph <- ZIO.succeed(graph.addEdge(Source.toInt,Destination.toInt))
+      weight <- getUserInput("----------------------------------------------------\nEnter a edge weight\n")
+      newGraph <- ZIO.succeed(graph.addEdge(Source.toInt,Destination.toInt,weight.toInt))
     } yield {
       graph = newGraph
       s"Edge from $Source to $Destination added successfully"
@@ -80,6 +81,23 @@ object Main extends ZIOAppDefault:
       graph = newGraph
       s"Node $Node added successfully"
     }
+
+  private def findShortestPath: IO[IOException, String] =
+    for {
+      source <- getUserInput("----------------------------------------------------\nEnter a source node name\n")
+      destination <- getUserInput("----------------------------------------------------\nEnter a destination node name\n")
+      res <- ZIO.succeed(graph.getShortestPath(source.toInt, destination.toInt))
+      path = res._1
+      weight = res._2
+    } yield {
+      if weight==99999 : Boolean
+        then
+        s"No path available"
+      else
+        s"Result:\nPath: ${path.mkString(" -> ")}\nWeight: $weight"
+      end if
+
+    }
   private def removeDirectedNode: IO[IOException,String] =
     for {
       Node <- getUserInput("----------------------------------------------------\nEnter a node name\n")
@@ -91,7 +109,7 @@ object Main extends ZIOAppDefault:
   private def mainMenu: IO[IOException, String] =
     for {
       Option <- getUserInput("----------------------------------------------------\nChoose an option:\n1: Create/Load a graph\n2: Save graph\n3: Modify/Display graph\n4: Exit\n")
-      res <- Option match
+      _ <- Option match
         case "1" => loadFile <*> mainMenu
         case "2" => saveFile <*> mainMenu
         case "3" => graphMenu <*> mainMenu
@@ -101,15 +119,20 @@ object Main extends ZIOAppDefault:
 
   private def graphMenu: IO[IOException, String] =
     for {
-      graphOption <- getUserInput("----------------------------------------------------\nChoose an option:\n1: Display\n2: Clear\n3: New node\n4: New edge\n5: Remove node\n6: Remove edge\n7: Back\n")
-      res <- graphOption match
+      graphOption <- getUserInput("----------------------------------------------------\nChoose an option:\n 1: Display\n 2: Clear\n 3: New node\n 4: New edge\n 5: Remove node\n 6: Remove edge\n 7: Find shortest path\n 8: Detect cycle\n 9: Topological sort\n10: Back\n")
+      _ <- graphOption match
         case "1" => Console.printLine("Copy the following line and input it in a Graphviz viewer of your choice\n" ++ this.graph.toDot) <*> graphMenu //TODO
-        case "2" => Console.printLine("Clear graph") <*> graphMenu //TODO
+        case "2" => Console.printLine("Clear graph") <*> graphMenu
         case "3" => addDirectedNode <*> graphMenu
         case "4" => addDirectedEdge <*> graphMenu
         case "5" => removeDirectedNode <*> graphMenu
         case "6" => removeDirectedEdge <*> graphMenu
-        case "7" => Console.printLine("")
+        case "7" => findShortestPath.flatMap { res =>
+          Console.printLine(res) <*> graphMenu
+        }
+        case "8" => Console.printLine(this.graph.cycleDetection()) <*> graphMenu
+        case "9" => Console.printLine(this.graph.topologicalSort()) <*> graphMenu
+        case "10" => Console.printLine("")
         case _ => Console.printLine("Invalid option. Please try again.") <*> graphMenu
     } yield graphOption
 
