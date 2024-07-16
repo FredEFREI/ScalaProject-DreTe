@@ -2,46 +2,47 @@ package lib
 
 import scala.annotation.tailrec
 
-case class GraphDirected[A](nodes: List[A], edges: List[(A , A)]) extends MyGraph[A]:
+case class GraphDirectedWeighted[A](nodes: List[A], edges: List[((A , A), Int)]) extends MyGraphWeighted[A]:
 
   override def getPrevious(node: A):List[A] =
     for {
       edge <- edges
-      (from, to) = edge
+      (from, to) = edge._1
       if to == node
     } yield from
 
   override def getNeighbours(node: A):List[A] =
     for {
       edge <- edges
-      (from , to) = edge
+      (from , to) = edge._1
       if from == node
     } yield to
 
   override def getPrevNeigh(node: A): List[A] =
     getPrevious(node) ++ getNeighbours(node)
 
-  override def addNode(toAdd: A): GraphDirected[A] =
-    if nodes.contains(toAdd) then this else GraphDirected(this.nodes.appended(toAdd), this.edges)
+  override def addNode(toAdd: A): GraphDirectedWeighted[A] =
+    if nodes.contains(toAdd) then this else GraphDirectedWeighted(this.nodes.appended(toAdd), this.edges)
 
-  override def removeNode(toRemove: A): GraphDirected[A] =
-    val updatedEdges:List[(A, A)] = for {
+  override def removeNode(toRemove: A): GraphDirectedWeighted[A] =
+    val updatedEdges:List[((A, A), Int)] = for {
       edge <- edges
-      (from, to) = edge
+      (from, to) = edge._1
       if !(from == toRemove || to == toRemove)
     } yield edge
 
-    GraphDirected(this.nodes.filterNot(node => node == toRemove), updatedEdges)
+    GraphDirectedWeighted(this.nodes.filterNot(node => node == toRemove), updatedEdges)
 
-  override def addEdge(from: A, to: A):GraphDirected[A] =
+  override def addEdge(from: A, to: A, weight: Int):GraphDirectedWeighted[A] =
     val updatedNode: List[A] = nodes ++ (if !this.nodes.contains(from) then List(from) else Nil) ++ (if !this.nodes.contains(to) then List(to) else Nil)
-    GraphDirected(updatedNode, this.edges ++ List(from -> to))
+    val tuple = ((from , to), weight)
+    GraphDirectedWeighted(updatedNode, this.edges ++ List(tuple))
 
-  override def removeEdge(from: A, to: A): GraphDirected[A] =
-    GraphDirected(this.nodes, this.edges.filterNot(edge => edge == (from -> to)))
+  override def removeEdge(from: A, to: A): GraphDirectedWeighted[A] =
+    GraphDirectedWeighted(this.nodes, this.edges.filterNot(edge => edge == (from -> to)))
 
   override implicit def toDot: String =
-    "digraph { " ++ nodes.map{a => s"$a "}.mkString ++ edges.map{case(a, b) => s"$a -> $b "}.mkString ++ "}"
+    "digraph { " ++ nodes.map{a => s"$a "}.mkString ++ edges.map(edge => s"${edge._1._1} -> ${edge._1._2} [label=${edge._2}] ").mkString ++ "}"
 
 
   override def dfs(node: A): List[A] = {
@@ -81,7 +82,7 @@ case class GraphDirected[A](nodes: List[A], edges: List[(A , A)]) extends MyGrap
         topologicalSortHelper(hasFroms.map{case (k, v) => k -> (v -- found)}, done ++ found)
     }
     val froms = edges.foldLeft(Map[A, Set[A]]()) { (acc, e) =>
-      acc + (e._1 -> acc.getOrElse(e._1, Set())) + (e._2 -> (acc.getOrElse(e._2, Set()) + e._1))
+      acc + (e._1._1 -> acc.getOrElse(e._1._1, Set())) + (e._1._2 -> (acc.getOrElse(e._1._2, Set()) + e._1._1))
     }
     val isolated = for {
       node <- nodes
@@ -147,14 +148,19 @@ case class GraphDirected[A](nodes: List[A], edges: List[(A , A)]) extends MyGrap
 
     val initialDist: Map[(A, A), Int] = (for {
       edge <- edges
-      (a, b) = edge
-    } yield (edge, if (a == b) 0 else 1)).toMap.withDefaultValue(99999)
-    
+      (a, b) = edge._1
+    } yield ((a, b), if (a == b) 0 else edge._2)).toMap.withDefaultValue(99999)
+
+    def isInEdges(a: A, b: A): Boolean =
+      val unweigthedEdges = for {
+        edge <- edges
+      } yield edge._1
+      unweigthedEdges.contains((a, b))
 
     val initialPred: Map[(A, A), Option[A]] = (for {
       a <- nodes
       b <- nodes
-    } yield ((a, b), if (a == b || edges.contains((a, b))) Some(a) else None)).toMap
+    } yield ((a, b), if (a == b || isInEdges(a, b)) Some(a) else None)).toMap
 
     floydHelper(initialDist, initialPred, nodes)
 
@@ -164,7 +170,7 @@ case class GraphDirected[A](nodes: List[A], edges: List[(A , A)]) extends MyGrap
       @tailrec
       def getPathHelper(path: List[A], current: A): List[A] = pred((from, current)) match {
         case Some(prev) if prev != from => getPathHelper(prev :: path, prev)
-        case Some(prev) =>  prev :: path
+        case Some(prev) => prev :: path
         case None => path
       }
 
@@ -178,4 +184,4 @@ case class GraphDirected[A](nodes: List[A], edges: List[(A , A)]) extends MyGrap
 
     (getPath(pred, from, to), dist((from, to)))
   }
-end GraphDirected
+end GraphDirectedWeighted

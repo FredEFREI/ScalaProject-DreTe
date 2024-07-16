@@ -28,6 +28,8 @@ test6.cycleDetection()
 test6.addEdge(6, 1).cycleDetection()
 
 test6.getShortestPath(1, 2)
+test6.getShortestPath(5, 2)
+
 
 test6.getNeighbours(3)
 test6.getPrevious(3)
