@@ -18,6 +18,15 @@ val test6 = test5.removeNode(9)
 import zio.json._
 implicit val encoder: JsonEncoder[GraphDirectedWeighted[Int]] = DeriveJsonEncoder.gen[GraphDirectedWeighted[Int]]
 
+val test7: GraphDirectedWeighted[Int] = GraphDirectedWeighted[Int](List(),List())
+
+val test8 = test7.addNode(3)
+val test9 = test8.addNode(3)
+
+test6.addEdge(5,4,7).cycleDetection()
+
+test7.toDot
+test7.dfs(1)
 
 test6.toJson
 test6.dfs(1)
@@ -32,5 +41,7 @@ test6.getShortestPath(5, 2)
 
 
 test6.getNeighbours(3)
+test6.getNeighbours(1)
 test6.getPrevious(3)
+test6.getPrevious(1)
 test6.getPrevNeigh(3)
