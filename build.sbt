@@ -1,7 +1,6 @@
 ThisBuild / scalaVersion     := "3.3.3"
-ThisBuild / version          := "0.1.0-SNAPSHOT"
-ThisBuild / organization     := "com.example"
-ThisBuild / organizationName := "example"
+ThisBuild / version          := "1.0.0"
+ThisBuild / organizationName := "Dre-Te"
 
 // App subproject
 lazy val App = (project in file("APP"))
