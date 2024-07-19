@@ -72,12 +72,6 @@ class TestSuite extends AnyFlatSpec {
     assert(graph.getPrevious(1) == List())
   }
 
-  /* REQUIRE adding 'toJson' to the trait
-  it should "transform into a 'JSON' format" in {
-    val graph = GraphDirectedWeighted(List(1, 2, 3, 5, 4, 10, 6, 7), List(((1, 2), 1), ((3, 2), 3), ((1, 3), 4), ((4, 3), 8), ((4, 5), 5), ((5, 2), 2), ((1, 6), 9)))
-    assert(graph.toJson =="{\"nodes\":[1,2,3,5,4,10,6,7],\"edges\":[[[1,2],1],[[3,2],3],[[1,3],4],[[4,3],8],[[4,5],5],[[5,2],2],[[1,6],9]]}")
-  }
-  */
 
   it should "transform into a 'Dot' format" in {
     val graph = GraphDirectedWeighted(List(1, 2, 3, 5, 4, 10, 6, 7),List(((1,2),1), ((3,2),3), ((1,3),4), ((4,3),8), ((4,5),5), ((5,2),2), ((1,6),9)))
@@ -86,17 +80,15 @@ class TestSuite extends AnyFlatSpec {
     assert(graph2.toDot == "digraph { }")
   }
 
-  it should "???-1" in {
+  it should "compute the dfs algorithm" in {
     val graph = GraphDirectedWeighted(List(1, 2, 3, 5, 4, 10, 6, 7), List(((1, 2), 1), ((3, 2), 3), ((1, 3), 4), ((4, 3), 8), ((4, 5), 5), ((5, 2), 2), ((1, 6), 9)))
     assert(graph.dfs(1) == List(1, 2, 3, 6))
 
-    /* UNEXPECTED ERROR
-    val graph2 = GraphDirectedWeighted(List(), List())
+    val graph2 = GraphDirectedWeighted(List(1), List())
     assert(graph2.dfs(1) == List(1))
-     */
   }
 
-  it should "???-2" in {
+  it should "compute the bfs algorithm" in {
     val graph = GraphDirectedWeighted(List(1, 2, 3, 5, 4, 10, 6, 7), List(((1, 2), 1), ((3, 2), 3), ((1, 3), 4), ((4, 3), 8), ((4, 5), 5), ((5, 2), 2), ((1, 6), 9)))
     assert(graph.bfs(1) == List(List(1), List(2, 3, 6)))
   }
@@ -108,17 +100,9 @@ class TestSuite extends AnyFlatSpec {
 
   it should "detect if a graph has a cycle in it" in {
     val graph = GraphDirectedWeighted(List(1, 2, 3, 5, 4, 10, 6, 7), List(((1, 2), 1), ((3, 2), 3), ((1, 3), 4), ((4, 3), 8), ((4, 5), 5), ((5, 2), 2), ((1, 6), 9)))
-    assert(graph.cycleDetection() == false)
-    assert(graph.addEdge(5,4,7).cycleDetection() == true)
+    assert(!graph.cycleDetection())
+    assert(graph.addEdge(5, 4, 7).cycleDetection())
   }
-
-  /* REQUIRE adding "hasBidirectionalEdge" to the trait
-  it should "detect if a graph has bidirectional edges" in {
-    val graph = GraphDirectedWeighted(List(1, 2, 3, 5, 4, 10, 6, 7), List(((1, 2), 1), ((3, 2), 3), ((1, 3), 4), ((4, 3), 8), ((4, 5), 5), ((5, 2), 2), ((1, 6), 9)))
-    assert(graph.hasBidirectionalEdge() == false)
-    assert(graph.addEdge(5, 4, 7).hasBidirectionalEdge() == true)
-  }
-  */
 
   it should "be able to search the shortest path between two nodes" in {
     val graph = GraphDirectedWeighted(List(1, 2, 3, 5, 4, 10, 6, 7), List(((1, 2), 1), ((3, 2), 3), ((1, 3), 4), ((4, 3), 8), ((4, 5), 5), ((5, 2), 2), ((1, 6), 9)))
