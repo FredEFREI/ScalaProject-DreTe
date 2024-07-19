@@ -45,3 +45,6 @@ test6.getNeighbours(1)
 test6.getPrevious(3)
 test6.getPrevious(1)
 test6.getPrevNeigh(3)
+
+val graph = GraphDirectedWeighted[Int](List(2, 4), List(((2, 4), 6)))
+val graph_edge = graph.removeEdge(2, 4)

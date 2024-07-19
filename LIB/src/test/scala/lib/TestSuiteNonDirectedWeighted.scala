@@ -4,7 +4,7 @@ import lib.*
 import org.scalatest.flatspec
 import org.scalatest.flatspec.AnyFlatSpec
 
-class testsuitNonDirectedWeighted extends AnyFlatSpec {
+class TestSuiteNonDirectedWeighted extends AnyFlatSpec {
   behavior of "A Non Directed Weighted Graph"
 
   it should "be initialized" in {
@@ -53,8 +53,8 @@ class testsuitNonDirectedWeighted extends AnyFlatSpec {
   it should "remove an Edge" in {
     val graph = GraphNonDirectedWeighted[Int](List(2, 4), List(((2, 4), 6)))
     val graph_edge = graph.removeEdge(2, 4)
-    assert(graph.getEdges == List(((2, 4), 6)))
-    assert(graph.removeEdge(2, 4) == GraphNonDirectedWeighted[Int](List(2, 4), List()))
+    assert(graph_edge.getEdges == List())
+    assert(graph_edge == GraphNonDirectedWeighted[Int](List(2, 4), List()))
   }
 
   it should "remove all edges linked to a removed node" in {

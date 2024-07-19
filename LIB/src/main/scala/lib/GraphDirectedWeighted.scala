@@ -39,7 +39,7 @@ case class GraphDirectedWeighted[A](nodes: List[A], edges: List[((A , A), Int)])
     GraphDirectedWeighted(updatedNode, this.edges ++ List(tuple))
 
   override def removeEdge(from: A, to: A): GraphDirectedWeighted[A] =
-    GraphDirectedWeighted(this.nodes, this.edges.filterNot(edge => edge == (from -> to)))
+    GraphDirectedWeighted(this.nodes, this.edges.filterNot(edge => edge._1 == (from -> to)))
 
   override implicit def toDot: String =
     "digraph { " ++ nodes.map{a => s"$a "}.mkString ++ edges.map(edge => s"${edge._1._1} -> ${edge._1._2} [label=${edge._2}] ").mkString ++ "}"

@@ -1,9 +1,11 @@
+package lib
+
 import org.scalatest.flatspec
 import org.scalatest.flatspec.AnyFlatSpec
 
 import lib.*
 
-class TestSuite extends AnyFlatSpec {
+class TestSuiteDirectedWeighted extends AnyFlatSpec {
   behavior of "A Directed Weighted Graph"
 
   it should "be initialized" in {
@@ -52,8 +54,8 @@ class TestSuite extends AnyFlatSpec {
   it should "remove an Edge" in {
     val graph = GraphDirectedWeighted[Int](List(2, 4), List(((2, 4), 6)))
     val graph_edge = graph.removeEdge(2, 4)
-    assert(graph.getEdges == List(((2, 4), 6)))
-    assert(graph.removeEdge(2, 4) == GraphDirectedWeighted[Int](List(2, 4), List()))
+    assert(graph_edge.getEdges == List())
+    assert(graph_edge == GraphDirectedWeighted[Int](List(2, 4), List()))
   }
 
   it should "remove all edges linked to a removed node" in {
